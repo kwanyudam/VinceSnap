@@ -10,7 +10,7 @@ import Carbon.HIToolbox
 /// (~/Library/Preferences/com.knollsoft.Rectangle.plist), with one change:
 /// the U/I/J/K quarters are replaced by a 2-row × 4-column grid on
 /// U,I,O,P (top row) and J,K,L,; (bottom row).
-enum WindowAction: CaseIterable {
+enum WindowAction: String, CaseIterable {
     // 2×4 grid — the reason this app exists.
     case gridTop1, gridTop2, gridTop3, gridTop4
     case gridBottom1, gridBottom2, gridBottom3, gridBottom4
@@ -25,6 +25,17 @@ enum WindowAction: CaseIterable {
     case maximize, center
     // Display moves (no fixed target frame — handled in WindowManager)
     case previousDisplay, nextDisplay
+
+    /// Grouping shared by the status bar menu and the dashboard.
+    static let sections: [(title: String, actions: [WindowAction])] = [
+        ("2×4 Grid — Top", [.gridTop1, .gridTop2, .gridTop3, .gridTop4]),
+        ("2×4 Grid — Bottom", [.gridBottom1, .gridBottom2, .gridBottom3, .gridBottom4]),
+        ("Halves", [.leftHalf, .rightHalf, .topHalf, .bottomHalf]),
+        ("Thirds", [.firstThird, .centerThird, .lastThird]),
+        ("Fourths", [.firstFourth, .secondFourth, .thirdFourth, .lastFourth, .lastThreeFourths]),
+        ("Window", [.maximize, .center]),
+        ("Display", [.previousDisplay, .nextDisplay]),
+    ]
 
     var title: String {
         switch self {
@@ -55,9 +66,9 @@ enum WindowAction: CaseIterable {
         }
     }
 
-    /// Default global shortcut: Carbon key code + Carbon modifier flags.
-    /// Everything is Ctrl+Opt, matching the Rectangle config.
-    var defaultShortcut: (keyCode: UInt32, modifiers: UInt32) {
+    /// Default global shortcut. Everything is Ctrl+Opt, matching the
+    /// Rectangle config.
+    var defaultShortcut: Shortcut {
         let ctrlOpt = UInt32(controlKey | optionKey)
         let key: Int
         switch self {
@@ -86,37 +97,7 @@ enum WindowAction: CaseIterable {
         case .previousDisplay: key = kVK_PageUp
         case .nextDisplay: key = kVK_PageDown
         }
-        return (UInt32(key), ctrlOpt)
-    }
-
-    /// Cosmetic key equivalent shown in the status bar menu.
-    var menuKeyEquivalent: String {
-        switch self {
-        case .gridTop1: return "u"
-        case .gridTop2: return "i"
-        case .gridTop3: return "o"
-        case .gridTop4: return "p"
-        case .gridBottom1: return "j"
-        case .gridBottom2: return "k"
-        case .gridBottom3: return "l"
-        case .gridBottom4: return ";"
-        case .leftHalf: return String(UnicodeScalar(NSLeftArrowFunctionKey)!)
-        case .rightHalf: return String(UnicodeScalar(NSRightArrowFunctionKey)!)
-        case .topHalf: return String(UnicodeScalar(NSUpArrowFunctionKey)!)
-        case .bottomHalf: return String(UnicodeScalar(NSDownArrowFunctionKey)!)
-        case .firstThird: return "a"
-        case .centerThird: return "s"
-        case .lastThird: return "d"
-        case .firstFourth: return "q"
-        case .secondFourth: return "w"
-        case .thirdFourth: return "e"
-        case .lastFourth: return "r"
-        case .lastThreeFourths: return "f"
-        case .maximize: return "\r"
-        case .center: return "c"
-        case .previousDisplay: return String(UnicodeScalar(NSPageUpFunctionKey)!)
-        case .nextDisplay: return String(UnicodeScalar(NSPageDownFunctionKey)!)
-        }
+        return Shortcut(keyCode: UInt32(key), modifiers: ctrlOpt)
     }
 
     /// Actions that move the window to another display rather than to a

@@ -37,6 +37,16 @@ final class HotKeyCenter {
         nextID += 1
     }
 
+    /// Removes all registered hotkeys (used when remapping shortcuts and
+    /// while the dashboard records a new key combination).
+    func unregisterAll() {
+        for ref in hotKeyRefs {
+            if let ref { UnregisterEventHotKey(ref) }
+        }
+        hotKeyRefs.removeAll()
+        handlers.removeAll()
+    }
+
     private func installEventHandlerIfNeeded() {
         guard !handlerInstalled else { return }
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard),

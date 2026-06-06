@@ -9,7 +9,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestAccessibilityIfNeeded()
         setUpStatusItem()
-        registerHotKeys()
+        ShortcutManager.shared.registerAll()
+
+        // Rebuild the menu when mappings change in the dashboard.
+        NotificationCenter.default.addObserver(forName: .shortcutsChanged,
+                                               object: nil,
+                                               queue: .main) { [weak self] _ in
+            self?.rebuildMenu()
+        }
     }
 
     // MARK: - Accessibility permission
@@ -25,24 +32,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: - Status bar
 
-    private static let menuSections: [(title: String, actions: [WindowAction])] = [
-        ("2×4 Grid — Top", [.gridTop1, .gridTop2, .gridTop3, .gridTop4]),
-        ("2×4 Grid — Bottom", [.gridBottom1, .gridBottom2, .gridBottom3, .gridBottom4]),
-        ("Halves", [.leftHalf, .rightHalf, .topHalf, .bottomHalf]),
-        ("Thirds", [.firstThird, .centerThird, .lastThird]),
-        ("Fourths", [.firstFourth, .secondFourth, .thirdFourth, .lastFourth, .lastThreeFourths]),
-        ("Window", [.maximize, .center]),
-        ("Display", [.previousDisplay, .nextDisplay]),
-    ]
-
     private func setUpStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "rectangle.split.2x1",
                                            accessibilityDescription: "WindowSnap")
+        rebuildMenu()
+    }
 
+    private func rebuildMenu() {
         let menu = NSMenu()
         menu.delegate = self
-        for (index, section) in Self.menuSections.enumerated() {
+
+        let dashboardItem = NSMenuItem(title: "Dashboard…",
+                                       action: #selector(openDashboard),
+                                       keyEquivalent: ",")
+        dashboardItem.target = self
+        menu.addItem(dashboardItem)
+        menu.addItem(.separator())
+
+        for (index, section) in WindowAction.sections.enumerated() {
             if index > 0 { menu.addItem(.separator()) }
             let header = NSMenuItem(title: section.title, action: nil, keyEquivalent: "")
             header.isEnabled = false
@@ -50,13 +58,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             for action in section.actions {
                 let item = NSMenuItem(title: action.title,
                                       action: #selector(menuActionFired(_:)),
-                                      keyEquivalent: action.menuKeyEquivalent)
-                item.keyEquivalentModifierMask = [.control, .option]
+                                      keyEquivalent: "")
+                if let shortcut = ShortcutManager.shared.shortcut(for: action) {
+                    item.keyEquivalent = shortcut.menuKeyEquivalent
+                    item.keyEquivalentModifierMask = shortcut.cocoaModifiers
+                }
                 item.target = self
                 item.representedObject = action
                 menu.addItem(item)
             }
         }
+
         menu.addItem(.separator())
         launchAtLoginItem = NSMenuItem(title: "Launch at Login",
                                        action: #selector(toggleLaunchAtLogin),
@@ -74,6 +86,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         WindowManager.perform(action)
     }
 
+    @objc private func openDashboard() {
+        DashboardWindowController.shared.show()
+    }
+
     // MARK: - Launch at login
 
     func menuWillOpen(_ menu: NSMenu) {
@@ -89,18 +105,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
         } catch {
             NSLog("WindowSnap: launch-at-login toggle failed: \(error)")
-        }
-    }
-
-    // MARK: - Hotkeys
-
-    private func registerHotKeys() {
-        for action in WindowAction.allCases {
-            let shortcut = action.defaultShortcut
-            HotKeyCenter.shared.register(keyCode: shortcut.keyCode,
-                                         modifiers: shortcut.modifiers) {
-                WindowManager.perform(action)
-            }
         }
     }
 }
