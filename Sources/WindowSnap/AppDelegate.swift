@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestAccessibilityIfNeeded()
+        enableLaunchAtLoginOnce()
         setUpStatusItem()
         ShortcutManager.shared.registerAll()
 
@@ -91,6 +92,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     // MARK: - Launch at login
+
+    /// Registers as a login item on first launch only, so turning it off
+    /// later via the menu toggle sticks across launches.
+    private func enableLaunchAtLoginOnce() {
+        let key = "didConfigureLaunchAtLogin"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        do {
+            try SMAppService.mainApp.register()
+            NSLog("WindowSnap: registered as login item")
+        } catch {
+            NSLog("WindowSnap: login item registration failed: \(error)")
+        }
+    }
 
     func menuWillOpen(_ menu: NSMenu) {
         launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
