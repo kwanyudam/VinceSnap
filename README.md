@@ -28,20 +28,40 @@ included for `swift build` / Xcode, but note: some Command Line Tools
 installs ship a mismatched PackageDescription dylib that breaks SPM manifest
 loading — the swiftc path always works.
 
-## Shortcuts (defaults, Rectangle-compatible)
+## Shortcuts (all ⌃⌥, mirroring the user's Rectangle config)
 
-| Action       | Shortcut       |
-| ------------ | -------------- |
-| Left Half    | ⌃⌥ ←           |
-| Right Half   | ⌃⌥ →           |
-| Top Half     | ⌃⌥ ↑           |
-| Bottom Half  | ⌃⌥ ↓           |
-| Top Left     | ⌃⌥ U           |
-| Top Right    | ⌃⌥ I           |
-| Bottom Left  | ⌃⌥ J           |
-| Bottom Right | ⌃⌥ K           |
-| Maximize     | ⌃⌥ Return      |
-| Center       | ⌃⌥ C           |
+### 2×4 grid (2 rows × 4 columns — the headline feature)
+
+```
+┌─────┬─────┬─────┬─────┐
+│  U  │  I  │  O  │  P  │   top row
+├─────┼─────┼─────┼─────┤
+│  J  │  K  │  L  │  ;  │   bottom row
+└─────┴─────┴─────┴─────┘
+```
+
+Each cell is ¼ screen width × ½ screen height. Cell boundaries are computed
+proportionally and rounded so adjacent cells tile exactly.
+
+### Carried over from Rectangle
+
+| Action             | Shortcut    |
+| ------------------ | ----------- |
+| Left / Right Half  | ⌃⌥ ← / →    |
+| Top / Bottom Half  | ⌃⌥ ↑ / ↓    |
+| First/Center/Last Third (columns)  | ⌃⌥ A / S / D |
+| First…Last Fourth (columns)        | ⌃⌥ Q / W / E / R |
+| Last Three Fourths | ⌃⌥ F        |
+| Maximize           | ⌃⌥ Return   |
+| Center             | ⌃⌥ C        |
+| Previous / Next Display | ⌃⌥ PageUp / PageDown |
+
+Launch at Login is available as a menu bar toggle (Rectangle had
+`launchOnLogin = 1`).
+
+> **Note:** Rectangle binds ⌃⌥ U/I/J/K (quarters) and all of the above —
+> quit Rectangle (or clear its shortcuts) before running WindowSnap, or the
+> two apps will fight over the same hotkeys.
 
 ## Project layout
 
@@ -58,11 +78,10 @@ Makefile              build → .app bundle → ad-hoc sign
 
 ## Ideas / next steps
 
-- [ ] Thirds / two-thirds layouts and "repeated press cycles sizes"
-- [ ] Move window to next display
+- [ ] Repeated press cycles sizes (Rectangle's `subsequentExecutionMode = 1`)
+- [ ] Hide menu bar icon option (Rectangle had `hideMenubarIcon = 1`)
 - [ ] Restore previous frame (undo)
 - [ ] Drag-to-edge snapping (mouse event monitoring + overlay footprint)
 - [ ] User-configurable shortcuts (persist in UserDefaults)
-- [ ] Launch at login
 
 Inspired by [Rectangle](https://github.com/rxhanson/rectangle).

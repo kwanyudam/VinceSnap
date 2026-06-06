@@ -22,7 +22,42 @@ enum WindowManager {
         let screen = screenContaining(currentFrame) ?? NSScreen.main
         guard let visible = screen?.visibleFrame else { return }
 
+        if action.isDisplayMove {
+            moveToAdjacentDisplay(window: window,
+                                  currentFrame: currentFrame,
+                                  currentScreen: screen,
+                                  forward: action == .nextDisplay)
+            return
+        }
+
         let target = action.targetFrame(visibleFrame: visible, currentFrame: currentFrame)
+        setFrame(target, of: window)
+    }
+
+    /// Moves the window to the next/previous display, mapping its frame
+    /// proportionally into the destination screen's visible area.
+    private static func moveToAdjacentDisplay(window: AXUIElement,
+                                              currentFrame: CGRect,
+                                              currentScreen: NSScreen?,
+                                              forward: Bool) {
+        let screens = NSScreen.screens
+        guard screens.count > 1,
+              let currentScreen,
+              let index = screens.firstIndex(of: currentScreen)
+        else {
+            NSSound.beep()
+            return
+        }
+        let offset = forward ? 1 : screens.count - 1
+        let dest = screens[(index + offset) % screens.count].visibleFrame
+        let src = currentScreen.visibleFrame
+
+        let scaleX = dest.width / src.width
+        let scaleY = dest.height / src.height
+        let target = CGRect(x: dest.minX + (currentFrame.minX - src.minX) * scaleX,
+                            y: dest.minY + (currentFrame.minY - src.minY) * scaleY,
+                            width: currentFrame.width * scaleX,
+                            height: currentFrame.height * scaleY)
         setFrame(target, of: window)
     }
 

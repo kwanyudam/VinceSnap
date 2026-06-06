@@ -5,90 +5,155 @@ import Carbon.HIToolbox
 /// All frames here are in Cocoa coordinates (origin at bottom-left of the
 /// primary screen, y goes up) — conversion to AX coordinates happens in
 /// `WindowManager`.
+///
+/// The action set and shortcuts mirror the user's Rectangle configuration
+/// (~/Library/Preferences/com.knollsoft.Rectangle.plist), with one change:
+/// the U/I/J/K quarters are replaced by a 2-row × 4-column grid on
+/// U,I,O,P (top row) and J,K,L,; (bottom row).
 enum WindowAction: CaseIterable {
-    case leftHalf
-    case rightHalf
-    case topHalf
-    case bottomHalf
-    case topLeftQuarter
-    case topRightQuarter
-    case bottomLeftQuarter
-    case bottomRightQuarter
-    case maximize
-    case center
+    // 2×4 grid — the reason this app exists.
+    case gridTop1, gridTop2, gridTop3, gridTop4
+    case gridBottom1, gridBottom2, gridBottom3, gridBottom4
+    // Halves
+    case leftHalf, rightHalf, topHalf, bottomHalf
+    // Column thirds
+    case firstThird, centerThird, lastThird
+    // Column fourths
+    case firstFourth, secondFourth, thirdFourth, lastFourth
+    case lastThreeFourths
+    // Misc
+    case maximize, center
+    // Display moves (no fixed target frame — handled in WindowManager)
+    case previousDisplay, nextDisplay
 
     var title: String {
         switch self {
+        case .gridTop1: return "Grid Top 1"
+        case .gridTop2: return "Grid Top 2"
+        case .gridTop3: return "Grid Top 3"
+        case .gridTop4: return "Grid Top 4"
+        case .gridBottom1: return "Grid Bottom 1"
+        case .gridBottom2: return "Grid Bottom 2"
+        case .gridBottom3: return "Grid Bottom 3"
+        case .gridBottom4: return "Grid Bottom 4"
         case .leftHalf: return "Left Half"
         case .rightHalf: return "Right Half"
         case .topHalf: return "Top Half"
         case .bottomHalf: return "Bottom Half"
-        case .topLeftQuarter: return "Top Left"
-        case .topRightQuarter: return "Top Right"
-        case .bottomLeftQuarter: return "Bottom Left"
-        case .bottomRightQuarter: return "Bottom Right"
+        case .firstThird: return "First Third"
+        case .centerThird: return "Center Third"
+        case .lastThird: return "Last Third"
+        case .firstFourth: return "First Fourth"
+        case .secondFourth: return "Second Fourth"
+        case .thirdFourth: return "Third Fourth"
+        case .lastFourth: return "Last Fourth"
+        case .lastThreeFourths: return "Last Three Fourths"
         case .maximize: return "Maximize"
         case .center: return "Center"
+        case .previousDisplay: return "Previous Display"
+        case .nextDisplay: return "Next Display"
         }
     }
 
     /// Default global shortcut: Carbon key code + Carbon modifier flags.
-    /// Defaults mirror Rectangle's (Ctrl+Opt + arrows / U-I-J-K / Return / C).
+    /// Everything is Ctrl+Opt, matching the Rectangle config.
     var defaultShortcut: (keyCode: UInt32, modifiers: UInt32) {
         let ctrlOpt = UInt32(controlKey | optionKey)
+        let key: Int
         switch self {
-        case .leftHalf: return (UInt32(kVK_LeftArrow), ctrlOpt)
-        case .rightHalf: return (UInt32(kVK_RightArrow), ctrlOpt)
-        case .topHalf: return (UInt32(kVK_UpArrow), ctrlOpt)
-        case .bottomHalf: return (UInt32(kVK_DownArrow), ctrlOpt)
-        case .topLeftQuarter: return (UInt32(kVK_ANSI_U), ctrlOpt)
-        case .topRightQuarter: return (UInt32(kVK_ANSI_I), ctrlOpt)
-        case .bottomLeftQuarter: return (UInt32(kVK_ANSI_J), ctrlOpt)
-        case .bottomRightQuarter: return (UInt32(kVK_ANSI_K), ctrlOpt)
-        case .maximize: return (UInt32(kVK_Return), ctrlOpt)
-        case .center: return (UInt32(kVK_ANSI_C), ctrlOpt)
+        case .gridTop1: key = kVK_ANSI_U
+        case .gridTop2: key = kVK_ANSI_I
+        case .gridTop3: key = kVK_ANSI_O
+        case .gridTop4: key = kVK_ANSI_P
+        case .gridBottom1: key = kVK_ANSI_J
+        case .gridBottom2: key = kVK_ANSI_K
+        case .gridBottom3: key = kVK_ANSI_L
+        case .gridBottom4: key = kVK_ANSI_Semicolon
+        case .leftHalf: key = kVK_LeftArrow
+        case .rightHalf: key = kVK_RightArrow
+        case .topHalf: key = kVK_UpArrow
+        case .bottomHalf: key = kVK_DownArrow
+        case .firstThird: key = kVK_ANSI_A
+        case .centerThird: key = kVK_ANSI_S
+        case .lastThird: key = kVK_ANSI_D
+        case .firstFourth: key = kVK_ANSI_Q
+        case .secondFourth: key = kVK_ANSI_W
+        case .thirdFourth: key = kVK_ANSI_E
+        case .lastFourth: key = kVK_ANSI_R
+        case .lastThreeFourths: key = kVK_ANSI_F
+        case .maximize: key = kVK_Return
+        case .center: key = kVK_ANSI_C
+        case .previousDisplay: key = kVK_PageUp
+        case .nextDisplay: key = kVK_PageDown
         }
+        return (UInt32(key), ctrlOpt)
     }
 
     /// Cosmetic key equivalent shown in the status bar menu.
     var menuKeyEquivalent: String {
         switch self {
+        case .gridTop1: return "u"
+        case .gridTop2: return "i"
+        case .gridTop3: return "o"
+        case .gridTop4: return "p"
+        case .gridBottom1: return "j"
+        case .gridBottom2: return "k"
+        case .gridBottom3: return "l"
+        case .gridBottom4: return ";"
         case .leftHalf: return String(UnicodeScalar(NSLeftArrowFunctionKey)!)
         case .rightHalf: return String(UnicodeScalar(NSRightArrowFunctionKey)!)
         case .topHalf: return String(UnicodeScalar(NSUpArrowFunctionKey)!)
         case .bottomHalf: return String(UnicodeScalar(NSDownArrowFunctionKey)!)
-        case .topLeftQuarter: return "u"
-        case .topRightQuarter: return "i"
-        case .bottomLeftQuarter: return "j"
-        case .bottomRightQuarter: return "k"
+        case .firstThird: return "a"
+        case .centerThird: return "s"
+        case .lastThird: return "d"
+        case .firstFourth: return "q"
+        case .secondFourth: return "w"
+        case .thirdFourth: return "e"
+        case .lastFourth: return "r"
+        case .lastThreeFourths: return "f"
         case .maximize: return "\r"
         case .center: return "c"
+        case .previousDisplay: return String(UnicodeScalar(NSPageUpFunctionKey)!)
+        case .nextDisplay: return String(UnicodeScalar(NSPageDownFunctionKey)!)
         }
+    }
+
+    /// Actions that move the window to another display rather than to a
+    /// frame on the current one.
+    var isDisplayMove: Bool {
+        self == .previousDisplay || self == .nextDisplay
     }
 
     /// Computes the destination frame within a screen's visible frame
     /// (the area excluding the menu bar and the Dock).
     func targetFrame(visibleFrame v: CGRect, currentFrame: CGRect) -> CGRect {
-        let halfW = (v.width / 2).rounded(.down)
-        let halfH = (v.height / 2).rounded(.down)
-        // Note: Cocoa y goes up, so "top" rows start at v.minY + halfH.
         switch self {
-        case .leftHalf:
-            return CGRect(x: v.minX, y: v.minY, width: halfW, height: v.height)
-        case .rightHalf:
-            return CGRect(x: v.minX + halfW, y: v.minY, width: v.width - halfW, height: v.height)
-        case .topHalf:
-            return CGRect(x: v.minX, y: v.minY + halfH, width: v.width, height: v.height - halfH)
-        case .bottomHalf:
-            return CGRect(x: v.minX, y: v.minY, width: v.width, height: halfH)
-        case .topLeftQuarter:
-            return CGRect(x: v.minX, y: v.minY + halfH, width: halfW, height: v.height - halfH)
-        case .topRightQuarter:
-            return CGRect(x: v.minX + halfW, y: v.minY + halfH, width: v.width - halfW, height: v.height - halfH)
-        case .bottomLeftQuarter:
-            return CGRect(x: v.minX, y: v.minY, width: halfW, height: halfH)
-        case .bottomRightQuarter:
-            return CGRect(x: v.minX + halfW, y: v.minY, width: v.width - halfW, height: halfH)
+        // 2×4 grid: rows counted from the top, columns from the left.
+        case .gridTop1: return Self.cell(row: 0, of: 2, col: 0, of: 4, in: v)
+        case .gridTop2: return Self.cell(row: 0, of: 2, col: 1, of: 4, in: v)
+        case .gridTop3: return Self.cell(row: 0, of: 2, col: 2, of: 4, in: v)
+        case .gridTop4: return Self.cell(row: 0, of: 2, col: 3, of: 4, in: v)
+        case .gridBottom1: return Self.cell(row: 1, of: 2, col: 0, of: 4, in: v)
+        case .gridBottom2: return Self.cell(row: 1, of: 2, col: 1, of: 4, in: v)
+        case .gridBottom3: return Self.cell(row: 1, of: 2, col: 2, of: 4, in: v)
+        case .gridBottom4: return Self.cell(row: 1, of: 2, col: 3, of: 4, in: v)
+
+        case .leftHalf: return Self.cell(row: 0, of: 1, col: 0, of: 2, in: v)
+        case .rightHalf: return Self.cell(row: 0, of: 1, col: 1, of: 2, in: v)
+        case .topHalf: return Self.cell(row: 0, of: 2, col: 0, of: 1, in: v)
+        case .bottomHalf: return Self.cell(row: 1, of: 2, col: 0, of: 1, in: v)
+
+        case .firstThird: return Self.cell(row: 0, of: 1, col: 0, of: 3, in: v)
+        case .centerThird: return Self.cell(row: 0, of: 1, col: 1, of: 3, in: v)
+        case .lastThird: return Self.cell(row: 0, of: 1, col: 2, of: 3, in: v)
+
+        case .firstFourth: return Self.cell(row: 0, of: 1, col: 0, of: 4, in: v)
+        case .secondFourth: return Self.cell(row: 0, of: 1, col: 1, of: 4, in: v)
+        case .thirdFourth: return Self.cell(row: 0, of: 1, col: 2, of: 4, in: v)
+        case .lastFourth: return Self.cell(row: 0, of: 1, col: 3, of: 4, in: v)
+        case .lastThreeFourths: return Self.cell(row: 0, of: 1, col: 1, of: 4, colSpan: 3, in: v)
+
         case .maximize:
             return v
         case .center:
@@ -99,6 +164,23 @@ enum WindowAction: CaseIterable {
                           y: v.midY - size.height / 2,
                           width: size.width,
                           height: size.height)
+        case .previousDisplay, .nextDisplay:
+            return currentFrame // handled by WindowManager
         }
+    }
+
+    /// Frame of a grid cell. Boundaries are computed proportionally and
+    /// rounded so adjacent cells tile without gaps or overlaps even when
+    /// the screen size doesn't divide evenly.
+    private static func cell(row: Int, of rowCount: Int,
+                             col: Int, of colCount: Int,
+                             colSpan: Int = 1,
+                             in v: CGRect) -> CGRect {
+        let x0 = v.minX + (v.width * CGFloat(col) / CGFloat(colCount)).rounded()
+        let x1 = v.minX + (v.width * CGFloat(col + colSpan) / CGFloat(colCount)).rounded()
+        // Rows count from the top; Cocoa y goes up.
+        let yTop = v.maxY - (v.height * CGFloat(row) / CGFloat(rowCount)).rounded()
+        let yBottom = v.maxY - (v.height * CGFloat(row + 1) / CGFloat(rowCount)).rounded()
+        return CGRect(x: x0, y: yBottom, width: x1 - x0, height: yTop - yBottom)
     }
 }
