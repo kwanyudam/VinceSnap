@@ -29,7 +29,7 @@ final class HotKeyCenter {
         let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID,
                                          GetApplicationEventTarget(), 0, &hotKeyRef)
         guard status == noErr else {
-            NSLog("WindowSnap: failed to register hotkey (keyCode \(keyCode)), status \(status)")
+            NSLog("VinceSnap: failed to register hotkey (keyCode \(keyCode)), status \(status)")
             return
         }
         handlers[nextID] = handler

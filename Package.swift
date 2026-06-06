@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "WindowSnap",
+    name: "VinceSnap",
     platforms: [
         .macOS(.v13)
     ],
     targets: [
         .executableTarget(
-            name: "WindowSnap",
-            path: "Sources/WindowSnap"
+            name: "VinceSnap",
+            path: "Sources/VinceSnap"
         )
     ]
 )

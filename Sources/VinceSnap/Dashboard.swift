@@ -13,7 +13,7 @@ final class DashboardWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "WindowSnap"
+        window.title = "VinceSnap"
         window.contentViewController = NSHostingController(rootView: DashboardView())
         window.isReleasedWhenClosed = false
         window.center()
@@ -55,7 +55,7 @@ struct DashboardView: View {
                 .font(.system(size: 38, weight: .medium))
                 .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 2) {
-                Text("WindowSnap")
+                Text("VinceSnap")
                     .font(.title.bold())
                 Text("Made by KwanYuKim")
                     .font(.subheadline)

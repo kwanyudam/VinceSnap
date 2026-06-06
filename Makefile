@@ -1,7 +1,7 @@
-APP_NAME = WindowSnap
+APP_NAME = VinceSnap
 BUILD_DIR = build
 APP_BUNDLE = $(APP_NAME).app
-SOURCES = $(wildcard Sources/WindowSnap/*.swift)
+SOURCES = $(wildcard Sources/VinceSnap/*.swift)
 
 # Note: this Makefile invokes swiftc directly instead of `swift build`
 # because the current Command Line Tools install has a mismatched

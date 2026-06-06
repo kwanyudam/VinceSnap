@@ -1,4 +1,4 @@
-# WindowSnap
+# VinceSnap
 
 A minimal macOS window manager — resize and position windows with keyboard
 shortcuts, Rectangle-style. Lives in the menu bar, no Dock icon.
@@ -16,11 +16,11 @@ shortcuts, Rectangle-style. Lives in the menu bar, no Dock icon.
 ## Build & run
 
 ```sh
-make run      # builds, wraps in WindowSnap.app, signs ad-hoc, launches
+make run      # builds, wraps in VinceSnap.app, signs ad-hoc, launches
 ```
 
 On first launch macOS will prompt for **Accessibility** permission:
-System Settings → Privacy & Security → Accessibility → enable WindowSnap.
+System Settings → Privacy & Security → Accessibility → enable VinceSnap.
 (Re-launch after granting.)
 
 The Makefile compiles with `swiftc` directly. A `Package.swift` is also
@@ -60,13 +60,13 @@ Launch at Login is available as a menu bar toggle (Rectangle had
 `launchOnLogin = 1`).
 
 > **Note:** Rectangle binds ⌃⌥ U/I/J/K (quarters) and all of the above —
-> quit Rectangle (or clear its shortcuts) before running WindowSnap, or the
+> quit Rectangle (or clear its shortcuts) before running VinceSnap, or the
 > two apps will fight over the same hotkeys.
 
 ## Project layout
 
 ```
-Sources/WindowSnap/
+Sources/VinceSnap/
   main.swift          app entry point (accessory activation policy)
   AppDelegate.swift   status bar menu, permission prompt, hotkey wiring
   WindowAction.swift  the action enum + target-frame math

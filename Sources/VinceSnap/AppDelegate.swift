@@ -27,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // System Settings → Privacy & Security → Accessibility.
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         if !AXIsProcessTrustedWithOptions(options) {
-            NSLog("WindowSnap: waiting for Accessibility permission")
+            NSLog("VinceSnap: waiting for Accessibility permission")
         }
     }
 
@@ -36,7 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func setUpStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "rectangle.split.2x1",
-                                           accessibilityDescription: "WindowSnap")
+                                           accessibilityDescription: "VinceSnap")
         rebuildMenu()
     }
 
@@ -76,7 +76,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                        keyEquivalent: "")
         launchAtLoginItem.target = self
         menu.addItem(launchAtLoginItem)
-        menu.addItem(NSMenuItem(title: "Quit WindowSnap",
+        menu.addItem(NSMenuItem(title: "Quit VinceSnap",
                                 action: #selector(NSApplication.terminate(_:)),
                                 keyEquivalent: "q"))
         statusItem.menu = menu
@@ -101,9 +101,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         UserDefaults.standard.set(true, forKey: key)
         do {
             try SMAppService.mainApp.register()
-            NSLog("WindowSnap: registered as login item")
+            NSLog("VinceSnap: registered as login item")
         } catch {
-            NSLog("WindowSnap: login item registration failed: \(error)")
+            NSLog("VinceSnap: login item registration failed: \(error)")
         }
     }
 
@@ -119,7 +119,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 try SMAppService.mainApp.register()
             }
         } catch {
-            NSLog("WindowSnap: launch-at-login toggle failed: \(error)")
+            NSLog("VinceSnap: launch-at-login toggle failed: \(error)")
         }
     }
 }

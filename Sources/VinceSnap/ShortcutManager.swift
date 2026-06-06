@@ -3,7 +3,7 @@ import AppKit
 
 extension Notification.Name {
     /// Posted whenever any key mapping changes (menu and dashboard refresh).
-    static let shortcutsChanged = Notification.Name("WindowSnap.shortcutsChanged")
+    static let shortcutsChanged = Notification.Name("VinceSnap.shortcutsChanged")
 }
 
 /// Owns the action → shortcut mapping: persistence in UserDefaults,
