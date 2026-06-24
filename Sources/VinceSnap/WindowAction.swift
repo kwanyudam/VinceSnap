@@ -14,6 +14,8 @@ enum WindowAction: String, CaseIterable {
     // 2×4 grid — the reason this app exists.
     case gridTop1, gridTop2, gridTop3, gridTop4
     case gridBottom1, gridBottom2, gridBottom3, gridBottom4
+    // Quarters — fixed to each corner of the screen
+    case topLeftQuarter, topRightQuarter, bottomLeftQuarter, bottomRightQuarter
     // Halves
     case leftHalf, rightHalf, topHalf, bottomHalf
     // Column thirds
@@ -30,6 +32,7 @@ enum WindowAction: String, CaseIterable {
     static let sections: [(title: String, actions: [WindowAction])] = [
         ("2×4 Grid — Top", [.gridTop1, .gridTop2, .gridTop3, .gridTop4]),
         ("2×4 Grid — Bottom", [.gridBottom1, .gridBottom2, .gridBottom3, .gridBottom4]),
+        ("Quarters", [.topLeftQuarter, .topRightQuarter, .bottomLeftQuarter, .bottomRightQuarter]),
         ("Halves", [.leftHalf, .rightHalf, .topHalf, .bottomHalf]),
         ("Thirds", [.firstThird, .centerThird, .lastThird]),
         ("Fourths", [.firstFourth, .secondFourth, .thirdFourth, .lastFourth, .lastThreeFourths]),
@@ -47,6 +50,10 @@ enum WindowAction: String, CaseIterable {
         case .gridBottom2: return "Grid Bottom 2"
         case .gridBottom3: return "Grid Bottom 3"
         case .gridBottom4: return "Grid Bottom 4"
+        case .topLeftQuarter: return "Top Left Quarter"
+        case .topRightQuarter: return "Top Right Quarter"
+        case .bottomLeftQuarter: return "Bottom Left Quarter"
+        case .bottomRightQuarter: return "Bottom Right Quarter"
         case .leftHalf: return "Left Half"
         case .rightHalf: return "Right Half"
         case .topHalf: return "Top Half"
@@ -80,6 +87,10 @@ enum WindowAction: String, CaseIterable {
         case .gridBottom2: key = kVK_ANSI_K
         case .gridBottom3: key = kVK_ANSI_L
         case .gridBottom4: key = kVK_ANSI_Semicolon
+        case .topLeftQuarter: key = kVK_ANSI_T
+        case .topRightQuarter: key = kVK_ANSI_Y
+        case .bottomLeftQuarter: key = kVK_ANSI_G
+        case .bottomRightQuarter: key = kVK_ANSI_H
         case .leftHalf: key = kVK_LeftArrow
         case .rightHalf: key = kVK_RightArrow
         case .topHalf: key = kVK_UpArrow
@@ -119,6 +130,12 @@ enum WindowAction: String, CaseIterable {
         case .gridBottom2: return Self.cell(row: 1, of: 2, col: 1, of: 4, in: v)
         case .gridBottom3: return Self.cell(row: 1, of: 2, col: 2, of: 4, in: v)
         case .gridBottom4: return Self.cell(row: 1, of: 2, col: 3, of: 4, in: v)
+
+        // Quarters: 2×2 grid, one per corner.
+        case .topLeftQuarter: return Self.cell(row: 0, of: 2, col: 0, of: 2, in: v)
+        case .topRightQuarter: return Self.cell(row: 0, of: 2, col: 1, of: 2, in: v)
+        case .bottomLeftQuarter: return Self.cell(row: 1, of: 2, col: 0, of: 2, in: v)
+        case .bottomRightQuarter: return Self.cell(row: 1, of: 2, col: 1, of: 2, in: v)
 
         case .leftHalf: return Self.cell(row: 0, of: 1, col: 0, of: 2, in: v)
         case .rightHalf: return Self.cell(row: 0, of: 1, col: 1, of: 2, in: v)
