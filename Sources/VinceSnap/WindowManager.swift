@@ -11,6 +11,13 @@ enum WindowManager {
 
     /// Applies an action to the currently focused window of the frontmost app.
     static func perform(_ action: WindowAction) {
+        // App-activation actions don't touch the focused window — handle them
+        // first so they work even when the target app isn't frontmost.
+        if let bundleID = action.appToActivate {
+            activateAllWindows(ofAppWithBundleID: bundleID)
+            return
+        }
+
         guard let window = focusedWindow() else {
             NSSound.beep()
             return
@@ -122,6 +129,19 @@ enum WindowManager {
                             width: currentFrame.width * scaleX,
                             height: currentFrame.height * scaleY)
         setFrame(target, of: window)
+    }
+
+    /// Brings every window of the given app forward and activates it. Beeps if
+    /// the app isn't running. `.activateAllWindows` is deprecated on recent
+    /// macOS but remains the only option that raises *all* of an app's windows
+    /// rather than just its key window.
+    private static func activateAllWindows(ofAppWithBundleID bundleID: String) {
+        guard let app = NSWorkspace.shared.runningApplications
+            .first(where: { $0.bundleIdentifier == bundleID }) else {
+            NSSound.beep()
+            return
+        }
+        app.activate(options: [.activateAllWindows])
     }
 
     // MARK: - Focused window

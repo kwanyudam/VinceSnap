@@ -32,6 +32,8 @@ enum WindowAction: String, CaseIterable {
     case maximize, center
     // Display moves (no fixed target frame — handled in WindowManager)
     case previousDisplay, nextDisplay
+    // App activation (no frame — brings all of an app's windows forward)
+    case bringAllITermToFront
 
     /// Grouping shared by the status bar menu and the dashboard.
     static let sections: [(title: String, actions: [WindowAction])] = [
@@ -43,6 +45,7 @@ enum WindowAction: String, CaseIterable {
         ("Fourths", [.firstFourth, .secondFourth, .thirdFourth, .lastFourth, .lastThreeFourths]),
         ("Window", [.maximize, .center]),
         ("Display", [.previousDisplay, .nextDisplay]),
+        ("Apps", [.bringAllITermToFront]),
     ]
 
     var title: String {
@@ -75,6 +78,7 @@ enum WindowAction: String, CaseIterable {
         case .center: return "Center"
         case .previousDisplay: return "Previous Display"
         case .nextDisplay: return "Next Display"
+        case .bringAllITermToFront: return "Bring iTerm to Front"
         }
     }
 
@@ -112,6 +116,7 @@ enum WindowAction: String, CaseIterable {
         case .center: key = kVK_ANSI_C
         case .previousDisplay: key = kVK_PageUp
         case .nextDisplay: key = kVK_PageDown
+        case .bringAllITermToFront: key = kVK_ANSI_X
         }
         return Shortcut(keyCode: UInt32(key), modifiers: ctrlOpt)
     }
@@ -120,6 +125,16 @@ enum WindowAction: String, CaseIterable {
     /// frame on the current one.
     var isDisplayMove: Bool {
         self == .previousDisplay || self == .nextDisplay
+    }
+
+    /// Bundle identifier of an app to bring fully forward, for actions that
+    /// activate an app instead of moving the focused window. Handled in
+    /// `WindowManager.perform` before any focused-window lookup.
+    var appToActivate: String? {
+        switch self {
+        case .bringAllITermToFront: return "com.googlecode.iterm2"
+        default: return nil
+        }
     }
 
     /// For the four half actions, the screen edge an arrow press points at and
@@ -181,7 +196,7 @@ enum WindowAction: String, CaseIterable {
                           y: v.midY - size.height / 2,
                           width: size.width,
                           height: size.height)
-        case .previousDisplay, .nextDisplay:
+        case .previousDisplay, .nextDisplay, .bringAllITermToFront:
             return currentFrame // handled by WindowManager
         }
     }
