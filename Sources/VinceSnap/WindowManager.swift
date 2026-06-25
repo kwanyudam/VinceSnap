@@ -31,7 +31,70 @@ enum WindowManager {
         }
 
         let target = action.targetFrame(visibleFrame: visible, currentFrame: currentFrame)
+
+        // Edge traversal: if a half action is pressed while the window already
+        // fills that half, hop to the adjacent display (landing on the opposite
+        // half there) instead of re-snapping to the same place — Rectangle-style.
+        if let crossing = action.edgeCrossing,
+           approxEqual(currentFrame, target),
+           let screen,
+           let dest = crossingScreen(from: screen, edge: crossing.toward) {
+            let landing = crossing.landingHalf.targetFrame(visibleFrame: dest.visibleFrame,
+                                                           currentFrame: currentFrame)
+            setFrame(landing, of: window)
+            return
+        }
+
         setFrame(target, of: window)
+    }
+
+    /// Whether two frames coincide within a small tolerance. The window's
+    /// stored frame can differ from the computed target by sub-pixel rounding
+    /// (and AX rounds to integers), so an exact compare would miss matches.
+    private static func approxEqual(_ a: CGRect, _ b: CGRect, tolerance: CGFloat = 2) -> Bool {
+        abs(a.minX - b.minX) <= tolerance && abs(a.minY - b.minY) <= tolerance &&
+        abs(a.width - b.width) <= tolerance && abs(a.height - b.height) <= tolerance
+    }
+
+    /// The display a window should hop to when traversing `edge`: the physically
+    /// adjacent one if it exists, otherwise the display at the far opposite end
+    /// so the screens rotate (pressing → off the rightmost wraps to the leftmost,
+    /// and ← off the leftmost wraps to the rightmost). Returns nil only when
+    /// there is no other display.
+    private static func crossingScreen(from screen: NSScreen, edge: ScreenEdge) -> NSScreen? {
+        if let adjacent = adjacentScreen(to: screen, edge: edge) { return adjacent }
+        let others = NSScreen.screens.filter { $0 != screen }
+        switch edge {
+        case .left:  return others.max { $0.frame.maxX < $1.frame.maxX } // rightmost
+        case .right: return others.min { $0.frame.minX < $1.frame.minX } // leftmost
+        case .up:    return others.min { $0.frame.minY < $1.frame.minY } // bottom-most
+        case .down:  return others.max { $0.frame.maxY < $1.frame.maxY } // top-most
+        }
+    }
+
+    /// The display physically adjacent to `screen` in the given direction, or
+    /// nil if there is none. Candidates must overlap on the perpendicular axis
+    /// (so a screen diagonally offset doesn't count); the closest one wins.
+    /// Frames are in Cocoa coordinates, so y increases upward.
+    private static func adjacentScreen(to screen: NSScreen, edge: ScreenEdge) -> NSScreen? {
+        let cur = screen.frame
+        let others = NSScreen.screens.filter { $0 != screen }
+        func vOverlap(_ f: CGRect) -> Bool { min(f.maxY, cur.maxY) - max(f.minY, cur.minY) > 0 }
+        func hOverlap(_ f: CGRect) -> Bool { min(f.maxX, cur.maxX) - max(f.minX, cur.minX) > 0 }
+        switch edge {
+        case .left:
+            return others.filter { $0.frame.maxX <= cur.minX + 1 && vOverlap($0.frame) }
+                         .max { $0.frame.maxX < $1.frame.maxX }
+        case .right:
+            return others.filter { $0.frame.minX >= cur.maxX - 1 && vOverlap($0.frame) }
+                         .min { $0.frame.minX < $1.frame.minX }
+        case .up:
+            return others.filter { $0.frame.minY >= cur.maxY - 1 && hOverlap($0.frame) }
+                         .min { $0.frame.minY < $1.frame.minY }
+        case .down:
+            return others.filter { $0.frame.maxY <= cur.minY + 1 && hOverlap($0.frame) }
+                         .max { $0.frame.maxY < $1.frame.maxY }
+        }
     }
 
     /// Moves the window to the next/previous display, mapping its frame

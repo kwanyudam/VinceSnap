@@ -1,6 +1,11 @@
 import AppKit
 import Carbon.HIToolbox
 
+/// A physical screen edge, used for Rectangle-style edge traversal: pressing a
+/// half-screen arrow while the window already fills that half hops to the
+/// display lying in this direction.
+enum ScreenEdge { case left, right, up, down }
+
 /// A window management action, plus the math to compute its target frame.
 /// All frames here are in Cocoa coordinates (origin at bottom-left of the
 /// primary screen, y goes up) — conversion to AX coordinates happens in
@@ -115,6 +120,20 @@ enum WindowAction: String, CaseIterable {
     /// frame on the current one.
     var isDisplayMove: Bool {
         self == .previousDisplay || self == .nextDisplay
+    }
+
+    /// For the four half actions, the screen edge an arrow press points at and
+    /// the half the window should occupy after crossing to the display there.
+    /// Pressing ⌃⌥← while a window already fills the left half moves it to the
+    /// right half of the display to the left (Rectangle-style edge traversal).
+    var edgeCrossing: (toward: ScreenEdge, landingHalf: WindowAction)? {
+        switch self {
+        case .leftHalf:   return (.left,  .rightHalf)
+        case .rightHalf:  return (.right, .leftHalf)
+        case .topHalf:    return (.up,    .bottomHalf)
+        case .bottomHalf: return (.down,  .topHalf)
+        default:          return nil
+        }
     }
 
     /// Computes the destination frame within a screen's visible frame
