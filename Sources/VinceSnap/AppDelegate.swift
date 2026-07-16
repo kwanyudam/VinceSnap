@@ -1,14 +1,11 @@
 import AppKit
 import ApplicationServices
-import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
-    private var launchAtLoginItem: NSMenuItem!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestAccessibilityIfNeeded()
-        enableLaunchAtLoginOnce()
         setUpStatusItem()
         ShortcutManager.shared.registerAll()
 
@@ -71,11 +68,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
-        launchAtLoginItem = NSMenuItem(title: "Launch at Login",
-                                       action: #selector(toggleLaunchAtLogin),
-                                       keyEquivalent: "")
-        launchAtLoginItem.target = self
-        menu.addItem(launchAtLoginItem)
         menu.addItem(NSMenuItem(title: "Quit VinceSnap",
                                 action: #selector(NSApplication.terminate(_:)),
                                 keyEquivalent: "q"))
@@ -91,35 +83,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DashboardWindowController.shared.show()
     }
 
-    // MARK: - Launch at login
-
-    /// Registers as a login item on first launch only, so turning it off
-    /// later via the menu toggle sticks across launches.
-    private func enableLaunchAtLoginOnce() {
-        let key = "didConfigureLaunchAtLogin"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-        UserDefaults.standard.set(true, forKey: key)
-        do {
-            try SMAppService.mainApp.register()
-            NSLog("VinceSnap: registered as login item")
-        } catch {
-            NSLog("VinceSnap: login item registration failed: \(error)")
-        }
-    }
-
-    func menuWillOpen(_ menu: NSMenu) {
-        launchAtLoginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
-    }
-
-    @objc private func toggleLaunchAtLogin() {
-        do {
-            if SMAppService.mainApp.status == .enabled {
-                try SMAppService.mainApp.unregister()
-            } else {
-                try SMAppService.mainApp.register()
-            }
-        } catch {
-            NSLog("VinceSnap: launch-at-login toggle failed: \(error)")
-        }
-    }
 }

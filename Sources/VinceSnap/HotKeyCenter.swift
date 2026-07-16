@@ -41,7 +41,7 @@ final class HotKeyCenter {
     /// while the dashboard records a new key combination).
     func unregisterAll() {
         for ref in hotKeyRefs {
-            if let ref { UnregisterEventHotKey(ref) }
+            if let ref = ref { UnregisterEventHotKey(ref) }
         }
         hotKeyRefs.removeAll()
         handlers.removeAll()

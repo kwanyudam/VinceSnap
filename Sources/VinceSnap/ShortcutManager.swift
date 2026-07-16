@@ -40,7 +40,7 @@ final class ShortcutManager {
     /// Assigns a shortcut (nil = unbind). If another action already uses
     /// the same combination, that action is unbound — last write wins.
     func set(_ shortcut: Shortcut?, for action: WindowAction) {
-        if let shortcut {
+        if let shortcut = shortcut {
             for other in WindowAction.allCases
             where other != action && self.shortcut(for: other) == shortcut {
                 defaults.set([String: Int](), forKey: key(other))

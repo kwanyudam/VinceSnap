@@ -162,7 +162,7 @@ struct ShortcutRecorderButton: View {
     }
 
     private func stopRecording() {
-        if let monitor { NSEvent.removeMonitor(monitor) }
+        if let monitor = monitor { NSEvent.removeMonitor(monitor) }
         monitor = nil
         isRecording = false
         ShortcutManager.shared.resumeAfterRecording()

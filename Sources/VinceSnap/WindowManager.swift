@@ -44,7 +44,7 @@ enum WindowManager {
         // half there) instead of re-snapping to the same place — Rectangle-style.
         if let crossing = action.edgeCrossing,
            approxEqual(currentFrame, target),
-           let screen,
+           let screen = screen,
            let dest = crossingScreen(from: screen, edge: crossing.toward) {
             let landing = crossing.landingHalf.targetFrame(visibleFrame: dest.visibleFrame,
                                                            currentFrame: currentFrame)
@@ -112,7 +112,7 @@ enum WindowManager {
                                               forward: Bool) {
         let screens = NSScreen.screens
         guard screens.count > 1,
-              let currentScreen,
+              let currentScreen = currentScreen,
               let index = screens.firstIndex(of: currentScreen)
         else {
             NSSound.beep()
@@ -151,7 +151,7 @@ enum WindowManager {
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         var value: CFTypeRef?
         let result = AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &value)
-        guard result == .success, let value else { return nil }
+        guard result == .success, let value = value else { return nil }
         return (value as! AXUIElement)
     }
 
