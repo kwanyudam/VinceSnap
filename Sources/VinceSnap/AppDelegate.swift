@@ -1,14 +1,20 @@
 import AppKit
 import ApplicationServices
+#if compiler(>=5.7)
 import ServiceManagement
+#endif
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
+    #if compiler(>=5.7)
     private var launchAtLoginItem: NSMenuItem!
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestAccessibilityIfNeeded()
+        #if compiler(>=5.7)
         enableLaunchAtLoginOnce()
+        #endif
         setUpStatusItem()
         ShortcutManager.shared.registerAll()
 
@@ -71,11 +77,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         menu.addItem(.separator())
+        #if compiler(>=5.7)
         launchAtLoginItem = NSMenuItem(title: "Launch at Login",
                                        action: #selector(toggleLaunchAtLogin),
                                        keyEquivalent: "")
         launchAtLoginItem.target = self
         menu.addItem(launchAtLoginItem)
+        #endif
         menu.addItem(NSMenuItem(title: "Quit VinceSnap",
                                 action: #selector(NSApplication.terminate(_:)),
                                 keyEquivalent: "q"))
@@ -92,6 +100,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     // MARK: - Launch at login
+    //
+    // SMAppService needs the macOS 13 SDK (Xcode 14 / Swift 5.7+); older
+    // toolchains don't declare it at all, so this whole feature is compiled
+    // out rather than gated with `@available`, which only affects runtime
+    // checks, not symbol resolution at compile time.
+    #if compiler(>=5.7)
 
     /// Registers as a login item on first launch only, so turning it off
     /// later via the menu toggle sticks across launches.
@@ -122,4 +136,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             NSLog("VinceSnap: launch-at-login toggle failed: \(error)")
         }
     }
+    #endif
 }
