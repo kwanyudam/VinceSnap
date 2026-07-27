@@ -103,13 +103,16 @@ Rows count from the **top**. Examples already in the file:
 - 2×4 grid = `of 2` rows × `of 4` cols
 - halves/thirds/fourths = single row, N columns
 
-The eight 2×4 grid keys don't use `targetFrame` at runtime — `WindowManager`
-sees `gridCycle` is non-nil and steps the window through it on repeated
-presses: full cell → left half → right half → left half → … (the halves are
-2×8 cells). `nextInCycle` matches the *current* frame against the cycle, so
-there's no timer or press counter; wrapping goes to index 1, not 0, which is
-why the full cell is only reachable by pressing the key from somewhere else.
-`targetFrame` still returns the full cell for these actions as the fallback.
+The eight 2×4 grid keys and the four fourths (Q,W,E,R) don't use `targetFrame`
+at runtime — they list a cell in `cyclableCell`, so `WindowManager` sees
+`pressCycle` is non-nil and steps the window through it on repeated presses:
+full cell → left half → right half → left half → … (the halves are cells of
+the same grid with the columns doubled — 2×8 and 1×8 respectively).
+`nextInCycle` matches the *current* frame against the cycle, so there's no
+timer or press counter; wrapping goes to index 1, not 0, which is why the full
+cell is only reachable by pressing the key from somewhere else. `targetFrame`
+still returns the full cell for these actions as the fallback. To make another
+action cycle, just add it to `cyclableCell`.
 
 Shortcut key codes come from `Carbon.HIToolbox` (`kVK_ANSI_T`, `kVK_LeftArrow`,
 …). If you use a key code that isn't in `Shortcut.swift`'s `KeyCode.names` /

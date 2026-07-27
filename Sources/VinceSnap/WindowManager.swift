@@ -37,8 +37,8 @@ enum WindowManager {
             return
         }
 
-        // 2×4 grid keys cycle: full cell → left half → right half → left half…
-        if let cycle = action.gridCycle(visibleFrame: visible) {
+        // Grid and fourth keys cycle: full cell → left half → right half → left…
+        if let cycle = action.pressCycle(visibleFrame: visible) {
             setFrame(nextInCycle(cycle, currentFrame: currentFrame), of: window)
             return
         }
