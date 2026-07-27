@@ -14,7 +14,8 @@ enum ScreenEdge { case left, right, up, down }
 /// The action set and shortcuts mirror the user's Rectangle configuration
 /// (~/Library/Preferences/com.knollsoft.Rectangle.plist), with one change:
 /// the U/I/J/K quarters are replaced by a 2-row × 4-column grid on
-/// U,I,O,P (top row) and J,K,L,; (bottom row).
+/// U,I,O,P (top row) and J,K,L,; (bottom row). Those eight keys cycle on
+/// repeated presses — see `gridCycle`.
 enum WindowAction: String, CaseIterable {
     // 2×4 grid — the reason this app exists.
     case gridTop1, gridTop2, gridTop3, gridTop4
@@ -149,6 +150,36 @@ enum WindowAction: String, CaseIterable {
         case .bottomHalf: return (.down,  .topHalf)
         default:          return nil
         }
+    }
+
+    /// Position of the 2×4 grid actions within the grid, as (row from the top,
+    /// column from the left). Nil for every other action.
+    var gridCell: (row: Int, col: Int)? {
+        switch self {
+        case .gridTop1: return (0, 0)
+        case .gridTop2: return (0, 1)
+        case .gridTop3: return (0, 2)
+        case .gridTop4: return (0, 3)
+        case .gridBottom1: return (1, 0)
+        case .gridBottom2: return (1, 1)
+        case .gridBottom3: return (1, 2)
+        case .gridBottom4: return (1, 3)
+        default: return nil
+        }
+    }
+
+    /// Frames a 2×4 grid key steps through on repeated presses: the full cell,
+    /// then its left half, then its right half (i.e. cells of a 2×8 grid).
+    /// Index 0 is only the entry point — `WindowManager` wraps from the last
+    /// entry back to index 1, so holding on the key toggles left/right halves
+    /// instead of springing back to the full cell.
+    func gridCycle(visibleFrame v: CGRect) -> [CGRect]? {
+        guard let (row, col) = gridCell else { return nil }
+        // The 8-column boundaries at even indices coincide with the 4-column
+        // ones, so the two halves tile the full cell exactly.
+        return [Self.cell(row: row, of: 2, col: col, of: 4, in: v),
+                Self.cell(row: row, of: 2, col: col * 2, of: 8, in: v),
+                Self.cell(row: row, of: 2, col: col * 2 + 1, of: 8, in: v)]
     }
 
     /// Computes the destination frame within a screen's visible frame

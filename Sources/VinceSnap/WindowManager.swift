@@ -37,6 +37,12 @@ enum WindowManager {
             return
         }
 
+        // 2×4 grid keys cycle: full cell → left half → right half → left half…
+        if let cycle = action.gridCycle(visibleFrame: visible) {
+            setFrame(nextInCycle(cycle, currentFrame: currentFrame), of: window)
+            return
+        }
+
         let target = action.targetFrame(visibleFrame: visible, currentFrame: currentFrame)
 
         // Edge traversal: if a half action is pressed while the window already
@@ -53,6 +59,17 @@ enum WindowManager {
         }
 
         setFrame(target, of: window)
+    }
+
+    /// The next frame for a repeated-press cycle. A window that isn't sitting
+    /// on any frame of the cycle enters at index 0; from the last entry the
+    /// cycle wraps to index 1, not 0 — index 0 is the entry frame only, so
+    /// further presses alternate between the remaining frames.
+    private static func nextInCycle(_ frames: [CGRect], currentFrame: CGRect) -> CGRect {
+        guard frames.count > 1,
+              let i = frames.firstIndex(where: { approxEqual(currentFrame, $0) })
+        else { return frames[0] }
+        return frames[i + 1 < frames.count ? i + 1 : 1]
     }
 
     /// Whether two frames coincide within a small tolerance. The window's

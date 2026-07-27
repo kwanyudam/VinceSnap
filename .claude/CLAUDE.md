@@ -103,6 +103,14 @@ Rows count from the **top**. Examples already in the file:
 - 2×4 grid = `of 2` rows × `of 4` cols
 - halves/thirds/fourths = single row, N columns
 
+The eight 2×4 grid keys don't use `targetFrame` at runtime — `WindowManager`
+sees `gridCycle` is non-nil and steps the window through it on repeated
+presses: full cell → left half → right half → left half → … (the halves are
+2×8 cells). `nextInCycle` matches the *current* frame against the cycle, so
+there's no timer or press counter; wrapping goes to index 1, not 0, which is
+why the full cell is only reachable by pressing the key from somewhere else.
+`targetFrame` still returns the full cell for these actions as the fallback.
+
 Shortcut key codes come from `Carbon.HIToolbox` (`kVK_ANSI_T`, `kVK_LeftArrow`,
 …). If you use a key code that isn't in `Shortcut.swift`'s `KeyCode.names` /
 `menuKeyEquivalent` tables, the dashboard/menu will show "Key NN" — add it
